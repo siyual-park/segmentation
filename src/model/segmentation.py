@@ -1,3 +1,4 @@
+import torch
 from torch import nn
 
 from src.model.cbam import CBAM
@@ -82,4 +83,4 @@ class Mask(nn.Module):
         x_out = self.encoder(x_out)
         x_out = self.decoder(x_out)
 
-        return x_out
+        return torch.sigmoid(x_out)
