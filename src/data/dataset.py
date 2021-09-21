@@ -1,6 +1,6 @@
 from pathlib import Path
 from random import shuffle
-from typing import Tuple, List
+from typing import Tuple, List, Optional
 
 import numpy as np
 from PIL import Image
@@ -91,13 +91,19 @@ class SegmentationDataset(data.Dataset):
     def __len__(self):
         return len(self.__image_ids)
 
-    def __getitem__(self, idx) -> Tuple[Image.Image, Image.Image]:
+    def __getitem__(self, idx) -> Tuple[Optional[Image.Image], Optional[Image.Image]]:
         id = self.__image_ids[idx]
 
         images_path = self.data_path.joinpath(str(id))
 
-        origin_image = Image.open(images_path.joinpath(f'origin.{self.__format}')).convert('RGB')
-        mask_image = Image.open(images_path.joinpath(f'mask.{self.__format}')).convert('L')
+        origin_image_path = images_path.joinpath(f'origin.{self.__format}')
+        mask_image_path = images_path.joinpath(f'mask.{self.__format}')
+
+        if not origin_image_path.exists() or not mask_image_path.exists():
+            return None, None
+
+        origin_image = Image.open(origin_image_path).convert('RGB')
+        mask_image = Image.open(mask_image_path).convert('L')
 
         return origin_image, mask_image
 
