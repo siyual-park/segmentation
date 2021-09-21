@@ -22,8 +22,8 @@ class Encoder(nn.Module):
         self.up_scaling = Conv(
             in_channels=3,
             out_channels=channels,
-            kernel_size=kernel_size,
-            stride=stride,
+            kernel_size=1,
+            stride=1,
             dropout_prob=dropout_prob
         )
         self.block = nn.Sequential(*[
