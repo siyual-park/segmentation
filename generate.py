@@ -2,7 +2,7 @@ import argparse
 import os
 from pathlib import Path
 
-from src.data.dataset import SegmentationDataset
+from src.data.dataset import COCOSegmentationDataset
 from src.data.generator import COCOSegmentationGenerator
 
 
@@ -15,9 +15,9 @@ def generate(
     origin_path = Path(origin_path)
     path = Path(path)
 
-    coco_remote_dataset = SegmentationDataset(
+    coco_remote_dataset = COCOSegmentationDataset(
         path=origin_path,
-        dataset=dataset
+        dataset=dataset,
     )
 
     coco_segmentation_cache_generator = COCOSegmentationGenerator(

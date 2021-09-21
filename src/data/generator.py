@@ -6,14 +6,14 @@ import numpy as np
 from PIL import Image
 from tqdm import tqdm
 
-from src.data.dataset import SegmentationDataset
+from src.data.dataset import COCOSegmentationDataset
 from src.data.utils import get_data_size
 
 
 class COCOSegmentationGenerator:
     def __init__(
             self,
-            dataset: SegmentationDataset,
+            dataset: COCOSegmentationDataset,
             path: str or Path,
             format: str
     ):
