@@ -17,7 +17,7 @@ def generate(
 
     coco_remote_dataset = COCOSegmentationDataset(
         path=origin_path,
-        dataset=dataset
+        dataset=dataset,
     )
 
     coco_segmentation_cache_generator = COCOSegmentationGenerator(
