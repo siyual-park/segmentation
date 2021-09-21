@@ -1,8 +1,8 @@
 from typing import Tuple
 
-import numpy as np
 import torch
 from torch.utils import data
+from torchvision import transforms
 
 from src.common_types import size_2_t
 from src.data.dataset import SegmentationDataset
@@ -22,6 +22,9 @@ class SegmentationDataLoader(data.Dataset):
         self.image_size = image_size
         self.batch_size = batch_size
 
+        self.__image_to_tensor = transforms.ToTensor()
+        self.__normalize = transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+
     def shuffle(self):
         self.__dataset.shuffle()
 
@@ -38,14 +41,10 @@ class SegmentationDataLoader(data.Dataset):
             origin_image = origin_image.resize(self.image_size)
             mask_image = mask_image.resize(self.image_size)
 
-            origin_image = np.array(origin_image).astype('float32')
-            mask_image = np.array(mask_image).astype('float32')
+            origin_image = self.__image_to_tensor(origin_image)
+            mask_image = self.__image_to_tensor(mask_image)
 
-            origin_image = origin_image / 255
-            mask_image = mask_image / 255
-
-            origin_image = torch.from_numpy(origin_image)
-            mask_image = torch.from_numpy(mask_image)
+            origin_image = self.__normalize(origin_image)
 
             origin_images.append(origin_image)
             mask_images.append(mask_image)
