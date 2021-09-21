@@ -76,7 +76,7 @@ class Mask(nn.Module):
             kernel_size=1,
             stride=1
         )
-        
+
     def forward(self, x):
         x_out = self.attention(x)
         x_out = self.encoder(x_out)
