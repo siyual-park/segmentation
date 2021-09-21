@@ -9,6 +9,7 @@ from torch.optim import Optimizer
 from tqdm import tqdm
 
 from src.data.dataloader import SegmentationDataLoader
+from src.loss import dice_loss
 from src.model.segmentation import Mask
 from src.optimiser.lookahead import Lookahead
 from src.optimiser.radam import RAdam
@@ -164,9 +165,6 @@ class MaskTrainer(Trainer):
         self.__train_dataset = train_dataset
         self.__val_dataset = val_dataset
 
-        self.__criterion = nn.BCELoss()
-        self.__criterion.to(self._device)
-
     async def train(self) -> float:
         self._model.train()
 
@@ -175,16 +173,15 @@ class MaskTrainer(Trainer):
         total_loss = 0.0
 
         data = tqdm(self.__train_dataset)
-        for i, (keys, queries, labels) in enumerate(data):
-            keys = keys.to(self._device)
-            queries = queries.to(self._device)
-            labels = labels.to(self._device)
+        for i, (origin_images, mask_images) in enumerate(data):
+            origin_images = origin_images.to(self._device)
+            mask_images = mask_images.to(self._device)
 
             self._optimizer.zero_grad()
 
-            result = self._model(keys, queries)
+            result = self._model(origin_images)
 
-            loss = self.__criterion(result, labels)
+            loss = dice_loss(result, mask_images)
             loss.backward()
 
             total_loss += loss.item()
@@ -208,14 +205,13 @@ class MaskTrainer(Trainer):
         total_loss = 0.0
 
         with torch.no_grad():
-            for keys, queries, labels in tqdm(self.__val_dataset):
-                keys = keys.to(self._device)
-                queries = queries.to(self._device)
-                labels = labels.to(self._device)
+            for origin_images, mask_images in tqdm(self.__val_dataset):
+                origin_images = origin_images.to(self._device)
+                mask_images = mask_images.to(self._device)
 
-                result = self._model(keys, queries)
+                result = self._model(origin_images)
 
-                loss = self.__criterion(result, labels)
+                loss = dice_loss(result, mask_images)
                 total_loss += loss.item()
 
         return total_loss / len(self.__val_dataset)
