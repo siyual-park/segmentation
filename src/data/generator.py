@@ -54,7 +54,7 @@ class COCOSegmentationGenerator:
 
     def get_bbox(self, image: Image.Image) -> List[int]:
         mask = np.array(image).astype('uint8')
-        y_index, x_index = np.where(mask == 255)
+        y_index, x_index = np.where(mask != 0)
 
         if np.size(x_index) == 0 or np.size(y_index) == 0:
             return [0, 0, 0, 0]
