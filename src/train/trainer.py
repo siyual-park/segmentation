@@ -6,7 +6,12 @@ from time import time
 import torch
 from torch import nn
 from torch.optim import Optimizer
+from tqdm import tqdm
 
+from src.data.dataloader import SegmentationDataLoader
+from src.model.segmentation import Mask
+from src.optimiser.lookahead import Lookahead
+from src.optimiser.radam import RAdam
 from src.train.checkpoint import HardCheckpoint, SoftCheckpoint
 
 
@@ -134,3 +139,83 @@ class Trainer:
     @abc.abstractmethod
     async def evaluate(self) -> float:
         raise NotImplemented
+
+
+class MaskTrainer(Trainer):
+    def __init__(
+            self,
+            checkpoint: str or Path,
+            model: Mask,
+            train_dataset: SegmentationDataLoader,
+            val_dataset: SegmentationDataLoader,
+            lr: float,
+            k: int,
+            alpha: float
+    ):
+        optimizer = RAdam(model.parameters(), lr=lr)
+        optimizer = Lookahead(optimizer, k=k, alpha=alpha)
+
+        super().__init__(
+            checkpoint,
+            model,
+            optimizer
+        )
+
+        self.__train_dataset = train_dataset
+        self.__val_dataset = val_dataset
+
+        self.__criterion = nn.BCELoss()
+        self.__criterion.to(self._device)
+
+    async def train(self) -> float:
+        self._model.train()
+
+        self.__train_dataset.shuffle()
+
+        total_loss = 0.0
+
+        data = tqdm(self.__train_dataset)
+        for i, (keys, queries, labels) in enumerate(data):
+            keys = keys.to(self._device)
+            queries = queries.to(self._device)
+            labels = labels.to(self._device)
+
+            self._optimizer.zero_grad()
+
+            result = self._model(keys, queries)
+
+            loss = self.__criterion(result, labels)
+            loss.backward()
+
+            total_loss += loss.item()
+
+            self._optimizer.step()
+
+            cur_loss = total_loss / (i + 1)
+            data.set_description('{:3d} epoch, {:5.2f} loss, {:8.2f} ppl'.format(
+                self._last_checkpoint.epoch,
+                cur_loss,
+                math.exp(cur_loss)
+            ))
+
+        return total_loss / len(data)
+
+    async def evaluate(self) -> float:
+        self._model.eval()
+
+        self.__val_dataset.shuffle()
+
+        total_loss = 0.0
+
+        with torch.no_grad():
+            for keys, queries, labels in tqdm(self.__val_dataset):
+                keys = keys.to(self._device)
+                queries = queries.to(self._device)
+                labels = labels.to(self._device)
+
+                result = self._model(keys, queries)
+
+                loss = self.__criterion(result, labels)
+                total_loss += loss.item()
+
+        return total_loss / len(self.__val_dataset)
