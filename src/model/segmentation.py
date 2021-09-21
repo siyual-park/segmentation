@@ -33,12 +33,21 @@ class Encoder(nn.Module):
                     in_channels=channels,
                     out_channels=channels,
                     down_channels=down_channels,
-                    module=Conv(
-                        in_channels=down_channels,
-                        out_channels=down_channels,
-                        kernel_size=kernel_size,
-                        stride=stride,
-                        dropout_prob=dropout_prob
+                    module=nn.Sequential(
+                        Conv(
+                            in_channels=down_channels,
+                            out_channels=down_channels,
+                            kernel_size=kernel_size,
+                            stride=stride,
+                            dropout_prob=dropout_prob
+                        ),
+                        Conv(
+                            in_channels=down_channels,
+                            out_channels=down_channels,
+                            kernel_size=kernel_size,
+                            stride=stride,
+                            dropout_prob=dropout_prob
+                        )
                     )
                 )
             ) for _ in range(deep)
