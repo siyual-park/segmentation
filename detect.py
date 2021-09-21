@@ -10,10 +10,12 @@ from tqdm import tqdm
 from src.data.dataloader import SegmentationDetectDataLoader
 from src.data.dataset import SegmentationDetectDataset
 from src.model.segmentation import Mask
+from src.train.checkpoint import HardCheckpoint, Checkpoint
 
 
 def detect(
         model: Mask,
+        checkpoint: Checkpoint,
         date_path: Path or str,
         dataset: str,
         image_size: int,
@@ -34,6 +36,8 @@ def detect(
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     model.to(device)
+    checkpoint.load(map_location=device)
+
     model.eval()
 
     total_time = 0.0
@@ -78,7 +82,12 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('--checkpoint', type=str, default=str(int(time())))
+
     parser.add_argument('--dataset', type=str, default='detect')
+
+    parser.add_argument('--image_size', type=int, default=128)
+    parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--channels', type=int, default=32)
     parser.add_argument('--deep', type=int, default=2)
 
@@ -91,8 +100,19 @@ if __name__ == '__main__':
         dropout_prob=0.0
     )
 
+    checkpoint = HardCheckpoint(
+        path=checkpoints_path.joinpath(args.checkpoint),
+        model=mask,
+        optimizer=None,
+        epoch=0,
+        loss=float('inf')
+    )
+
     detect(
         model=mask,
+        checkpoint=checkpoint,
         date_path=date_path,
         dataset=args.dataset,
+        image_size=args.image_size,
+        batch_size=args.batch_size,
     )
