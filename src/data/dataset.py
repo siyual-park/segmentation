@@ -100,3 +100,36 @@ class SegmentationDataset(data.Dataset):
         mask_image = Image.open(images_path.joinpath(f'mask.{self.__format}')).convert('L')
 
         return origin_image, mask_image
+
+
+class SegmentationDetectDataset(data.Dataset):
+    def __init__(
+            self,
+            path: str or Path,
+            dataset: str,
+            format: str
+    ):
+        path = Path(path)
+
+        self.dataset = dataset
+        self.data_path = path.joinpath(dataset)
+
+        self.__format = format
+
+        data_size = get_data_size(self.data_path)
+        self.__image_ids = list(range(data_size))
+
+    def shuffle(self):
+        shuffle(self.__image_ids)
+
+    def __len__(self):
+        return len(self.__image_ids)
+
+    def __getitem__(self, idx) -> Tuple[Image.Image, Path]:
+        id = self.__image_ids[idx]
+
+        images_path = self.data_path.joinpath(str(id))
+
+        origin_image = Image.open(images_path.joinpath(f'origin.{self.__format}')).convert('RGB')
+
+        return origin_image, images_path
