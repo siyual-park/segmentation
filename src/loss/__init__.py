@@ -1,6 +1,3 @@
-import torch
-
-
 def dice_loss(pred, target):
     """This definition generalize to real valued pred and target vector.
 This should be differentiable.
@@ -15,7 +12,5 @@ This should be differentiable.
     tflat = target.contiguous().view(-1)
     intersection = (iflat * tflat).sum()
 
-    A_sum = torch.sum(tflat * iflat)
-    B_sum = torch.sum(tflat * tflat)
-
-    return 1 - ((2. * intersection + smooth) / (A_sum + B_sum + smooth))
+    return 1 - ((2. * intersection + smooth) /
+                (iflat.sum() + tflat.sum() + smooth))

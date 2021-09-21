@@ -84,4 +84,4 @@ class Mask(nn.Module):
         x_out = self.decoder(x_out)
 
         x_out = torch.sigmoid(x_out)
-        return (x_out > 0.5).float()
+        return x_out
