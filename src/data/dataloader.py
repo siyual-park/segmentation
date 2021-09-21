@@ -37,6 +37,8 @@ class SegmentationDataLoader(data.Dataset):
 
         for i in range(self.batch_size):
             origin_image, mask_image = self.__dataset[idx * self.batch_size + i]
+            if origin_image is None or mask_image is None:
+                continue
 
             origin_image = origin_image.resize(self.image_size)
             mask_image = mask_image.resize(self.image_size)
