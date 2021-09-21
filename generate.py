@@ -34,7 +34,7 @@ if __name__ == '__main__':
     root_path = path.parent.parent
 
     origin_path = root_path.joinpath('data').joinpath('coco')
-    date_path = root_path.joinpath('data').joinpath('instances')
+    date_path = root_path.joinpath('data').joinpath('coco_segment')
 
     parser = argparse.ArgumentParser()
 
