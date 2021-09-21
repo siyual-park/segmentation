@@ -131,11 +131,16 @@ class SegmentationDetectDataset(data.Dataset):
     def __len__(self):
         return len(self.__image_ids)
 
-    def __getitem__(self, idx) -> Tuple[Image.Image, Path]:
+    def __getitem__(self, idx) -> Tuple[Optional[Image.Image], Path]:
         id = self.__image_ids[idx]
 
         images_path = self.data_path.joinpath(str(id))
 
-        origin_image = Image.open(images_path.joinpath(f'origin.{self.__format}')).convert('RGB')
+        origin_image_path = images_path.joinpath(f'origin.{self.__format}')
+
+        if not origin_image_path.exists():
+            return None, images_path
+
+        origin_image = Image.open(origin_image_path).convert('RGB')
 
         return origin_image, images_path

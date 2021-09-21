@@ -7,6 +7,7 @@ import torch
 import torchvision.transforms as transforms
 from tqdm import tqdm
 
+from src.data.dataloader import SegmentationDetectDataLoader
 from src.data.dataset import SegmentationDetectDataset
 from src.model.segmentation import Mask
 
@@ -14,7 +15,9 @@ from src.model.segmentation import Mask
 def detect(
         model: Mask,
         date_path: Path or str,
-        dataset: str
+        dataset: str,
+        image_size: int,
+        batch_size: int,
 ):
     format = 'jpg'
 
@@ -23,30 +26,40 @@ def detect(
         dataset=dataset,
         format=format
     )
+    data_loader = SegmentationDetectDataLoader(
+        dataset=dataset,
+        image_size=image_size,
+        batch_size=batch_size
+    )
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     model.to(device)
     model.eval()
 
     total_time = 0.0
+    total_size = 0
 
     to_image = transforms.ToPILImage()
 
     with torch.no_grad():
-        for origin_images, image_path in tqdm(dataset):
+        for origin_images, image_paths in tqdm(data_loader):
             origin_images = origin_images.to(device)
 
             start = time()
-            mask = model(origin_images)
+            masks = model(origin_images)
             end = time()
 
             total_time += end - start
+            total_size += len(image_paths)
 
-            mask_image = to_image(mask)
-            mask_image.save(image_path.joinpath(f'mask.{format}'))
+            for i, mask in enumerate(masks):
+                image_path = image_paths[i]
+
+                mask_image = to_image(mask)
+                mask_image.save(image_path.joinpath(f'mask.{format}'))
 
     print(
-        '{:5.2f}s'.format(total_time / len(dataset)),
+        '{:5.2f}s'.format(total_time / total_size),
         flush=True
     )
 
