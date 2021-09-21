@@ -78,14 +78,17 @@ class SegmentationDetectDataLoader(data.Dataset):
     def __len__(self):
         return len(self.__dataset) // self.batch_size
 
-    def __getitem__(self, idx) -> Tuple[torch.Tensor, List[Path]]:
+    def __getitem__(self, idx) -> Tuple[torch.Tensor, List[Path], List[Tuple[int, int]]]:
         origin_images = []
         image_paths = []
+        image_sizes = []
 
         for i in range(self.batch_size):
             origin_image, image_path = self.__dataset[idx * self.batch_size + i]
             if origin_image is None:
                 continue
+
+            image_sizes.append(origin_image.size)
 
             origin_image = origin_image.resize(self.image_size)
 
@@ -95,4 +98,4 @@ class SegmentationDetectDataLoader(data.Dataset):
             origin_images.append(origin_image)
             image_paths.append(image_path)
 
-        return torch.stack(origin_images), image_paths
+        return torch.stack(origin_images), image_paths, image_sizes

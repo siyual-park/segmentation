@@ -46,7 +46,7 @@ def detect(
     to_image = transforms.ToPILImage()
 
     with torch.no_grad():
-        for origin_images, image_paths in tqdm(data_loader):
+        for origin_images, image_paths, image_sizes in tqdm(data_loader):
             origin_images = origin_images.to(device)
 
             start = time()
@@ -58,8 +58,10 @@ def detect(
 
             for i, mask in enumerate(masks):
                 image_path = image_paths[i]
+                image_size = image_sizes[i]
 
                 mask_image = to_image(mask)
+                mask_image = mask_image.resize(image_size)
                 mask_image.save(image_path.joinpath(f'mask.{format}'))
 
     print(
