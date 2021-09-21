@@ -1,10 +1,13 @@
 from pathlib import Path
+from random import shuffle
 from typing import Tuple, List
 
 import numpy as np
 from PIL import Image
 from pycocotools import coco, mask as coco_mask
 from torch.utils import data
+
+from src.data.utils import get_data_size
 
 
 def load_annotated_ids(coco: coco.COCO):
@@ -24,7 +27,7 @@ class COCOSegmentationDataset(data.Dataset):
     def __init__(
             self,
             path: str or Path,
-            dataset: str
+            dataset: str,
     ):
         path = Path(path)
 
@@ -63,3 +66,37 @@ class COCOSegmentationDataset(data.Dataset):
                 mask = np.sum(mask, axis=2) > 0
             masks.append(Image.fromarray(np.uint8(mask * 255), 'L'))
         return masks
+
+
+class SegmentationDataset(data.Dataset):
+    def __init__(
+            self,
+            path: str or Path,
+            dataset: str,
+            format: str
+    ):
+        path = Path(path)
+
+        self.dataset = dataset
+        self.data_path = path.joinpath(dataset)
+
+        self.__format = format
+
+        data_size = get_data_size(self.data_path)
+        self.__image_ids = list(range(data_size))
+
+    def shuffle(self):
+        shuffle(self.__image_ids)
+
+    def __len__(self):
+        return len(self.__image_ids)
+
+    def __getitem__(self, idx) -> Tuple[Image.Image, Image.Image]:
+        id = self.__image_ids[idx]
+
+        images_path = self.data_path.joinpath(str(id))
+
+        origin_image = Image.open(images_path.joinpath(f'origin.{self.__format}')).convert('RGB')
+        mask_image = Image.open(images_path.joinpath(f'mask.{self.__format}')).convert('L')
+
+        return origin_image, mask_image
