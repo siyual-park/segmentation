@@ -1,17 +1,18 @@
 import os
 from pathlib import Path
 
+import numpy as np
 from PIL import Image
 from tqdm import tqdm
 
-from src.data.dataset import COCOSegmentationDataset
+from src.data.dataset import COCOSegmentationRemoteDataset
 from src.data.utils import get_data_size
 
 
 class COCOSegmentationCacheGenerator:
     def __init__(
             self,
-            dataset: COCOSegmentationDataset,
+            dataset: COCOSegmentationRemoteDataset,
             path: str or Path,
             format: str
     ):
@@ -21,7 +22,7 @@ class COCOSegmentationCacheGenerator:
         self.__path = path.joinpath(dataset.dataset)
         self.__format = format
 
-    def generate(self, force: bool = False):
+    def generate(self, force: bool = False) -> None:
         if os.path.exists(self.__path) and force:
             os.remove(self.__path)
 
@@ -42,5 +43,4 @@ class COCOSegmentationCacheGenerator:
             image.save(image_dir.joinpath(f'origin.{self.__format}'))
 
             for i, mask in enumerate(masks):
-                mask_image = Image.fromarray(mask)
-                mask_image.save(image_dir.joinpath(f'{i}.{self.__format}'))
+                mask.save(image_dir.joinpath(f'{i}.{self.__format}'))
