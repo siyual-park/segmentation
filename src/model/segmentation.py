@@ -49,7 +49,8 @@ class Encoder(nn.Module):
                             dropout_prob=dropout_prob
                         )
                     )
-                )
+                ),
+                activate=True
             ) for _ in range(deep)
         ])
 
