@@ -62,15 +62,15 @@ class COCOSegmentationRemoteDataset(COCOSegmentationDataset):
         path = self.data_path.joinpath(image_info['file_name'])
         image = Image.open(path).convert('RGB')
 
-        annotations_ids = self.__coco.loadAnns(self.__coco.getAnnIds(imgIds=image_id))
-        masks = Image.fromarray(self._gen_seg_masks(annotations_ids, image_info['height'], image_info['width']))
+        annotations = self.__coco.loadAnns(self.__coco.getAnnIds(imgIds=image_id))
+        masks = Image.fromarray(self._gen_seg_masks(annotations, image_info['height'], image_info['width']))
 
         return image, masks
 
-    def _gen_seg_masks(self, target, h, w):
+    def _gen_seg_masks(self, annotations, height, width):
         masks = []
-        for instance in target:
-            rle = coco_mask.frPyObjects(instance['Segmentation'], h, w)
+        for annotation in annotations:
+            rle = coco_mask.frPyObjects(annotation['Segmentation'], height, width)
             m = coco_mask.decode(rle)
             if len(m.shape) < 3:
                 masks.append(m)
