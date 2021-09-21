@@ -63,7 +63,7 @@ if __name__ == '__main__':
     )
 
     mask = Mask(
-        channels=32,
+        channels=64,
         deep=args.deep,
         expansion=0.5,
         dropout_prob=args.dropout_prob
