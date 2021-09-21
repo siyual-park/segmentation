@@ -16,4 +16,4 @@ This should be differentiable.
 
     loss = 1 - ((2. * intersection + smooth) / (iflat.sum(dim=1) + tflat.sum(dim=1) + smooth))
 
-    return loss.sum() / batch_size
+    return loss.mean()
