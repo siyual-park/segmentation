@@ -8,7 +8,7 @@ This should be differentiable.
     smooth = 1.
 
     # have to use contiguous since they may from a torch.view op
-    batch_size, = target.size()
+    batch_size = target.size(0)
 
     iflat = pred.contiguous().view(batch_size, -1)
     tflat = target.contiguous().view(batch_size, -1)
