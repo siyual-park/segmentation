@@ -11,7 +11,6 @@ def represents_int(s: str):
 
 def get_data_size(path: Path):
     data_size = 0
-    for entry in path.iterdir():
-        if represents_int(entry.name.removesuffix(entry.suffix)):
-            data_size += 1
+    for _ in path.iterdir():
+        data_size += 1
     return data_size

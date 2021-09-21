@@ -4,14 +4,14 @@ from pathlib import Path
 from PIL import Image
 from tqdm import tqdm
 
-from src.data.dataset import COCODataset
+from src.data.dataset import COCOSegmentationDataset
 from src.data.utils import get_data_size
 
 
 class SegmentationImageGenerator:
     def __init__(
             self,
-            dataset: COCODataset,
+            dataset: COCOSegmentationDataset,
             path: str or Path,
             format: str
     ):
@@ -32,15 +32,15 @@ class SegmentationImageGenerator:
 
         print(f'Generate bounding box images from {self.__dataset.data_path} to {self.__path}')
         for image, masks in tqdm(self.__dataset):
+            current_data_index += 1
+            if current_data_index <= existed_data_size:
+                continue
+
             image_dir = self.__path.joinpath(str(current_data_index - 1))
             image_dir.mkdir(parents=True)
 
             image.save(image_dir.joinpath(f'origin.{self.__format}'))
 
             for i, mask in enumerate(masks):
-                current_data_index += 1
-                if current_data_index <= existed_data_size:
-                    continue
-
                 mask_image = Image.fromarray(mask)
                 mask_image.save(image_dir.joinpath(f'{i}.{self.__format}'))

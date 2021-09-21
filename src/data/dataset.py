@@ -1,3 +1,5 @@
+import abc
+from abc import ABC
 from pathlib import Path
 from typing import Tuple
 
@@ -5,6 +7,17 @@ import numpy as np
 from PIL import Image
 from pycocotools import coco, mask as coco_mask
 from torch.utils import data
+
+
+@abc.ABCMeta
+class COCOSegmentationDataset(data.Dataset, ABC):
+    @abc.abstractmethod
+    def __len__(self) -> int:
+        raise NotImplemented
+
+    @abc.abstractmethod
+    def __getitem__(self, idx) -> Tuple[Image.Image, np.ndarray]:
+        raise NotImplemented
 
 
 def load_annotated_ids(coco: coco.COCO):
@@ -20,7 +33,7 @@ def load_annotated_ids(coco: coco.COCO):
     return image_ids
 
 
-class COCODataset(data.Dataset):
+class COCOSegmentationRemoteDataset(COCOSegmentationDataset):
     def __init__(
             self,
             path: str or Path,
@@ -39,7 +52,7 @@ class COCODataset(data.Dataset):
 
         self.__image_ids = load_annotated_ids(self.__coco)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.__image_ids)
 
     def __getitem__(self, idx) -> Tuple[Image.Image, np.ndarray]:
@@ -64,4 +77,3 @@ class COCODataset(data.Dataset):
             else:
                 masks.append((np.sum(m, axis=2)) > 0)
         return masks
-
