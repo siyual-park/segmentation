@@ -9,6 +9,56 @@ from src.data.dataset import SegmentationDataset
 from src.model.segmentation import Mask
 from src.train.trainer import MaskTrainer
 
+
+def train(
+        model: Mask,
+        date_path: Path or str,
+        train_dataset: str,
+        val_dataset: str,
+        image_size: int,
+        batch_size: int,
+        checkpoint: Path or str,
+        lr: float,
+        k: int,
+        alpha: float,
+        epochs: int
+):
+    train_dataset = SegmentationDataset(
+        path=date_path,
+        dataset=train_dataset,
+        format='jpg'
+    )
+    val_dataset = SegmentationDataset(
+        path=date_path,
+        dataset=val_dataset,
+        format='jpg'
+    )
+
+    train_dataset = SegmentationDataLoader(
+        dataset=train_dataset,
+        image_size=image_size,
+        batch_size=batch_size
+    )
+    val_dataset = SegmentationDataLoader(
+        dataset=val_dataset,
+        image_size=image_size,
+        batch_size=batch_size
+    )
+
+    trainer = MaskTrainer(
+        checkpoint=checkpoint,
+        model=model,
+        train_dataset=train_dataset,
+        val_dataset=val_dataset,
+        lr=lr,
+        k=k,
+        alpha=alpha
+    )
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(trainer.run(epochs=epochs))
+
+
 if __name__ == '__main__':
     path = Path(os.path.abspath(__file__))
 
@@ -40,28 +90,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    train_dataset = SegmentationDataset(
-        path=date_path,
-        dataset=args.train,
-        format='jpg'
-    )
-    val_dataset = SegmentationDataset(
-        path=date_path,
-        dataset=args.val,
-        format='jpg'
-    )
-
-    train_dataset = SegmentationDataLoader(
-        dataset=train_dataset,
-        image_size=args.image_size,
-        batch_size=args.batch_size
-    )
-    val_dataset = SegmentationDataLoader(
-        dataset=val_dataset,
-        image_size=args.image_size,
-        batch_size=args.batch_size
-    )
-
     mask = Mask(
         channels=64,
         deep=args.deep,
@@ -69,16 +97,17 @@ if __name__ == '__main__':
         dropout_prob=args.dropout_prob
     )
 
-    trainer = MaskTrainer(
-        checkpoint=checkpoints_path.joinpath(args.checkpoint),
+    train(
         model=mask,
-        train_dataset=train_dataset,
-        val_dataset=val_dataset,
+        date_path=date_path,
+        train_dataset=args.train,
+        val_dataset=args.val,
+        image_size=args.image_size,
+        batch_size=args.batch_size,
+        checkpoint=checkpoints_path.joinpath(args.checkpoint),
         lr=args.lr,
         k=args.k,
-        alpha=args.alpha
+        alpha=args.alpha,
+        epochs=args.epochs
     )
-
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(trainer.run(epochs=args.epochs))
 
