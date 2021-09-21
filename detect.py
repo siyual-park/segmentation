@@ -66,12 +66,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--dataset', type=str, default='detect')
+    parser.add_argument('--channels', type=int, default=32)
     parser.add_argument('--deep', type=int, default=2)
 
     args = parser.parse_args()
 
     mask = Mask(
-        channels=32,
+        channels=args.channels,
         deep=args.deep,
         expansion=0.5,
         dropout_prob=0.0
