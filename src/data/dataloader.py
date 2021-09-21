@@ -40,6 +40,8 @@ class SegmentationDataLoader(data.Dataset):
 
             origin_image = np.array(origin_image).astype('float32')
             mask_image = np.array(mask_image).astype('float32')
+
+            origin_image = origin_image / 255
             mask_image = mask_image / 255
 
             origin_image = torch.from_numpy(origin_image)
