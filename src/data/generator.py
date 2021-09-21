@@ -8,7 +8,7 @@ from src.data.dataset import COCOSegmentationDataset
 from src.data.utils import get_data_size
 
 
-class SegmentationImageGenerator:
+class COCOSegmentationCacheGenerator:
     def __init__(
             self,
             dataset: COCOSegmentationDataset,

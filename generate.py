@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 
 from src.data.dataset import COCOSegmentationRemoteDataset
-from src.data.generator import SegmentationImageGenerator
+from src.data.generator import COCOSegmentationCacheGenerator
 
 
 def generate(
@@ -15,18 +15,18 @@ def generate(
     origin_path = Path(origin_path)
     path = Path(path)
 
-    coco = COCOSegmentationRemoteDataset(
+    coco_remote_dataset = COCOSegmentationRemoteDataset(
         path=origin_path,
         dataset=dataset
     )
 
-    segmentation_image_generator = SegmentationImageGenerator(
-        dataset=coco,
+    coco_segmentation_cache_generator = COCOSegmentationCacheGenerator(
+        dataset=coco_remote_dataset,
         path=path,
         format='jpg'
     )
 
-    segmentation_image_generator.generate(force=force)
+    coco_segmentation_cache_generator.generate(force=force)
 
 
 if __name__ == '__main__':
