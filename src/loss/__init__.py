@@ -8,9 +8,12 @@ This should be differentiable.
     smooth = 1.
 
     # have to use contiguous since they may from a torch.view op
-    iflat = pred.contiguous().view(-1)
-    tflat = target.contiguous().view(-1)
-    intersection = (iflat * tflat).sum()
+    batch_size, = target.size()
 
-    return 1 - ((2. * intersection + smooth) /
-                (iflat.sum() + tflat.sum() + smooth))
+    iflat = pred.contiguous().view(batch_size, -1)
+    tflat = target.contiguous().view(batch_size, -1)
+    intersection = (iflat * tflat).sum(dim=1)
+
+    loss = 1 - ((2. * intersection + smooth) / (iflat.sum(dim=1) + tflat.sum(dim=1) + smooth))
+
+    return loss.sum()
