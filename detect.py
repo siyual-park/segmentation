@@ -17,7 +17,7 @@ def detect(
         dataset: str
 ):
     format = 'jpg'
-    
+
     dataset = SegmentationDetectDataset(
         path=date_path,
         dataset=dataset,
