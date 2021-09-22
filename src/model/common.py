@@ -90,6 +90,63 @@ class Bottleneck(nn.Module):
         return x_out
 
 
+class C3(nn.Module):
+    # Standard convolution
+    def __init__(
+            self,
+            in_channels: int,
+            out_channels: int,
+            expansion: float = 0.5,
+            dropout_prob: float = 0.0
+    ):
+        super().__init__()
+
+        mid_channels = int(out_channels * expansion)  # hidden channels
+
+        self.conv1 = Conv(
+            in_channels=in_channels,
+            out_channels=mid_channels,
+            kernel_size=1,
+            stride=1,
+        )
+        self.conv2 = Conv(
+            in_channels=in_channels,
+            out_channels=mid_channels,
+            kernel_size=1,
+            stride=1,
+        )
+        self.conv3 = Conv(
+            in_channels=mid_channels * 2,
+            out_channels=out_channels,
+            kernel_size=1,
+            stride=1,
+        )
+        self.bottleneck = Shortcut(
+            module=Bottleneck(
+                in_channels=mid_channels,
+                out_channels=mid_channels,
+                down_channels=mid_channels,
+                module=Conv(
+                    in_channels=mid_channels,
+                    out_channels=mid_channels,
+                    kernel_size=3,
+                    stride=1,
+                    dropout_prob=dropout_prob
+                )
+            )
+        )
+
+    def forward(self, x):
+        x_out1 = self.conv1(x)
+        x_out1 = self.bottleneck(x_out1)
+
+        x_out2 = self.conv2(x)
+
+        x_out = torch.cat((x_out1, x_out2), dim=1)
+        x_out = self.conv3(x_out)
+
+        return x_out
+
 class Shortcut(nn.Module):
     def __init__(
             self,
