@@ -91,10 +91,17 @@ class Bottleneck(nn.Module):
 
 
 class Shortcut(nn.Module):
-    def __init__(self, module: nn.Module):
+    def __init__(
+            self,
+            module: nn.Module,
+            activate: bool or nn.Module = True,
+    ):
         super().__init__()
 
         self.module = module
+        self.activate = nn.ReLU() if activate is True else (
+            activate if isinstance(activate, nn.Module) else nn.Identity()
+        )
 
     def forward(self, x):
         y = self.module(x)
@@ -102,7 +109,7 @@ class Shortcut(nn.Module):
         if x.size() != y.size():
             return y
 
-        return x + y
+        return self.activate(x + y)
 
 
 class CalculateChannel(nn.Module):

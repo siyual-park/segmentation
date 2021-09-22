@@ -5,11 +5,10 @@ from src.model.cbam import CBAM
 from src.model.common import Conv, Shortcut, Bottleneck
 
 
-class Encoder(nn.Module):
+class ResBlock(nn.Module):
     def __init__(
             self,
             channels: int,
-            deep: int = 2,
             expansion: float = 0.5,
             dropout_prob: float = 0.0
     ):
@@ -20,6 +19,47 @@ class Encoder(nn.Module):
         kernel_size = 3
         stride = 1
 
+        self.block = Shortcut(
+            module=Bottleneck(
+                in_channels=channels,
+                out_channels=channels,
+                down_channels=down_channels,
+                module=nn.Sequential(
+                    Conv(
+                        in_channels=down_channels,
+                        out_channels=down_channels,
+                        kernel_size=kernel_size,
+                        stride=stride,
+                        dropout_prob=dropout_prob
+                    ),
+                    Conv(
+                        in_channels=down_channels,
+                        out_channels=down_channels,
+                        kernel_size=kernel_size,
+                        stride=stride,
+                        dropout_prob=dropout_prob
+                    )
+                )
+            ),
+            activate=True
+        )
+
+    def forward(self, x):
+        x_out = self.block(x)
+
+        return x_out
+
+
+class Encoder(nn.Module):
+    def __init__(
+            self,
+            channels: int,
+            deep: int = 2,
+            expansion: float = 0.5,
+            dropout_prob: float = 0.0
+    ):
+        super().__init__()
+
         self.up_scaling = Conv(
             in_channels=3,
             out_channels=channels,
@@ -28,19 +68,10 @@ class Encoder(nn.Module):
             dropout_prob=dropout_prob
         )
         self.block = nn.Sequential(*[
-            Shortcut(
-                module=Bottleneck(
-                    in_channels=channels,
-                    out_channels=channels,
-                    down_channels=down_channels,
-                    module=Conv(
-                        in_channels=down_channels,
-                        out_channels=down_channels,
-                        kernel_size=kernel_size,
-                        stride=stride,
-                        dropout_prob=dropout_prob
-                    )
-                )
+            ResBlock(
+                channels=channels,
+                expansion=expansion,
+                dropout_prob=dropout_prob
             ) for _ in range(deep)
         ])
 
@@ -83,4 +114,5 @@ class Mask(nn.Module):
         x_out = self.encoder(x_out)
         x_out = self.decoder(x_out)
 
-        return torch.sigmoid(x_out)
+        x_out = torch.sigmoid(x_out)
+        return x_out

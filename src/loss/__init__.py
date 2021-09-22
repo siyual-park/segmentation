@@ -1,6 +1,3 @@
-import torch
-
-
 def dice_loss(pred, target):
     """This definition generalize to real valued pred and target vector.
 This should be differentiable.
@@ -11,11 +8,12 @@ This should be differentiable.
     smooth = 1.
 
     # have to use contiguous since they may from a torch.view op
-    iflat = pred.contiguous().view(-1)
-    tflat = target.contiguous().view(-1)
-    intersection = (iflat * tflat).sum()
+    batch_size = target.size(0)
 
-    A_sum = torch.sum(tflat * iflat)
-    B_sum = torch.sum(tflat * tflat)
+    iflat = pred.contiguous().view(batch_size, -1)
+    tflat = target.contiguous().view(batch_size, -1)
+    intersection = (iflat * tflat).sum(dim=1)
 
-    return 1 - ((2. * intersection + smooth) / (A_sum + B_sum + smooth))
+    loss = 1 - ((2. * intersection + smooth) / (iflat.sum(dim=1) + tflat.sum(dim=1) + smooth))
+
+    return loss.mean()
