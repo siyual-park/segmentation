@@ -96,7 +96,8 @@ class Mask(nn.Module):
             module=CBAM(
                 gate_channels=3,
                 dropout_prob=dropout_prob
-            )
+            ),
+            activate=True
         )
         self.encoder = Encoder(
             channels=channels,
