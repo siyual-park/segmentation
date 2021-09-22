@@ -137,7 +137,7 @@ class Decoder(nn.Module):
         x_out = x[0]
         for i, block in enumerate(self.c3s):
             x_out = block(x_out)
-            if i != len(self.c3s):
+            if i < len(self.c3s) - 1:
                 x_out += x[i + 1]
 
         return x_out
