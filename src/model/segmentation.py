@@ -60,6 +60,8 @@ class Encoder(nn.Module):
     ):
         super().__init__()
 
+        self.deep = deep
+
         self.up_scaling = Conv(
             in_channels=3,
             out_channels=channels,
@@ -67,17 +69,29 @@ class Encoder(nn.Module):
             stride=1,
             dropout_prob=dropout_prob
         )
-        self.block = nn.Sequential(*[
+        self.blocks = nn.ModuleList([
             ResBlock(
                 channels=channels,
                 expansion=expansion,
                 dropout_prob=dropout_prob
-            ) for _ in range(deep)
+            ) for _ in range(deep * 2)
         ])
+
+        self.activate = nn.ReLU()
 
     def forward(self, x):
         x_out = self.up_scaling(x)
-        x_out = self.block(x_out)
+
+        x_ins = []
+        for i, block in enumerate(self.blocks):
+            x_ins.append(x_out)
+            x_out = block(x_out)
+
+            if i >= self.deep:
+                x_in = x_ins[(self.deep * 2) - i - 1]
+                if x_in.size() == x_out.size():
+                    x_out = x_in + x_out
+                    x_out = self.activate(x_out)
 
         return x_out
 
