@@ -92,9 +92,11 @@ class Mask(nn.Module):
     ):
         super().__init__()
 
-        self.attention = CBAM(
-            gate_channels=3,
-            dropout_prob=dropout_prob
+        self.attention = Shortcut(
+            module=CBAM(
+                gate_channels=3,
+                dropout_prob=dropout_prob
+            )
         )
         self.encoder = Encoder(
             channels=channels,
