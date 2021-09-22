@@ -58,6 +58,47 @@ class Conv(nn.Module):
         return self.activate(self.conv(x))
 
 
+class ConvTranspose(nn.Module):
+    # Standard convolution
+    def __init__(
+            self,
+            in_channels: int,
+            out_channels: int,
+            kernel_size: size_2_t,
+            stride: size_2_t = 1,
+            padding: Optional[size_2_t] = None,
+            dilation: size_2_t = 1,
+            groups: int = 1,
+            activate: bool or nn.Module = True,
+            dropout_prob: float = 0.0
+    ):
+        super().__init__()
+
+        self.conv = nn.ConvTranspose2d(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            padding,
+            dilation=dilation,
+            groups=groups,
+            bias=False
+        )
+
+        self.batch_norm = nn.BatchNorm2d(out_channels)
+        self.activate = nn.ReLU() if activate is True else (
+            activate if isinstance(activate, nn.Module) else nn.Identity()
+        )
+        self.dropout = nn.Dropout2d(p=dropout_prob)
+
+    def forward(self, x):
+        return self.dropout(self.activate(self.batch_norm(self.conv(x))))
+
+    def forward_fuse(self, x):
+        return self.activate(self.conv(x))
+
+
+
 class Bottleneck(nn.Module):
     def __init__(
             self,
@@ -89,6 +130,63 @@ class Bottleneck(nn.Module):
 
         return x_out
 
+
+class C3(nn.Module):
+    # Standard convolution
+    def __init__(
+            self,
+            in_channels: int,
+            out_channels: int,
+            expansion: float = 0.5,
+            dropout_prob: float = 0.0
+    ):
+        super().__init__()
+
+        mid_channels = int(out_channels * expansion)  # hidden channels
+
+        self.conv1 = Conv(
+            in_channels=in_channels,
+            out_channels=mid_channels,
+            kernel_size=1,
+            stride=1,
+        )
+        self.conv2 = Conv(
+            in_channels=in_channels,
+            out_channels=mid_channels,
+            kernel_size=1,
+            stride=1,
+        )
+        self.conv3 = Conv(
+            in_channels=mid_channels * 2,
+            out_channels=out_channels,
+            kernel_size=1,
+            stride=1,
+        )
+        self.bottleneck = Shortcut(
+            module=Bottleneck(
+                in_channels=mid_channels,
+                out_channels=mid_channels,
+                down_channels=mid_channels,
+                module=Conv(
+                    in_channels=mid_channels,
+                    out_channels=mid_channels,
+                    kernel_size=3,
+                    stride=1,
+                    dropout_prob=dropout_prob
+                )
+            )
+        )
+
+    def forward(self, x):
+        x_out1 = self.conv1(x)
+        x_out1 = self.bottleneck(x_out1)
+
+        x_out2 = self.conv2(x)
+
+        x_out = torch.cat((x_out1, x_out2), dim=1)
+        x_out = self.conv3(x_out)
+
+        return x_out
 
 class Shortcut(nn.Module):
     def __init__(
