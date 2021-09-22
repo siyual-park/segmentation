@@ -89,9 +89,9 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', type=str, default='detect')
 
     parser.add_argument('--image_size', type=int, default=128)
-    parser.add_argument('--batch_size', type=int, default=64)
+    parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--channels', type=int, default=128)
-    parser.add_argument('--deep', type=int, default=8)
+    parser.add_argument('--deep', type=int, default=4)
 
     args = parser.parse_args()
 
