@@ -2,52 +2,7 @@ import torch
 from torch import nn
 
 from src.model.cbam import CBAM
-from src.model.common import Conv, Shortcut, Bottleneck, C3, ConvTranspose
-
-
-class ResBlock(nn.Module):
-    def __init__(
-            self,
-            channels: int,
-            expansion: float = 0.5,
-            dropout_prob: float = 0.0
-    ):
-        super().__init__()
-
-        down_channels = max(int(channels * expansion), 1)
-
-        kernel_size = 3
-        stride = 1
-
-        self.block = Shortcut(
-            module=Bottleneck(
-                in_channels=channels,
-                out_channels=channels,
-                down_channels=down_channels,
-                module=nn.Sequential(
-                    Conv(
-                        in_channels=down_channels,
-                        out_channels=down_channels,
-                        kernel_size=kernel_size,
-                        stride=stride,
-                        dropout_prob=dropout_prob
-                    ),
-                    Conv(
-                        in_channels=down_channels,
-                        out_channels=down_channels,
-                        kernel_size=kernel_size,
-                        stride=stride,
-                        dropout_prob=dropout_prob
-                    )
-                )
-            ),
-            activate=True
-        )
-
-    def forward(self, x):
-        x_out = self.block(x)
-
-        return x_out
+from src.model.common import Conv, Shortcut, C3, ConvTranspose
 
 
 class Encoder(nn.Module):
@@ -89,7 +44,7 @@ class Encoder(nn.Module):
     def forward(self, x):
         x_out = x
         x_outs = []
-        for i, block in enumerate(self.c3s):
+        for i, block in enumerate(self.c3sx):
             x_out = block(x_out)
             x_outs.append(x_out)
 
