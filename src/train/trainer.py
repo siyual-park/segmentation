@@ -165,6 +165,9 @@ class MaskTrainer(Trainer):
         self.__train_dataset = train_dataset
         self.__val_dataset = val_dataset
 
+        self.__criterion = nn.BCELoss()
+        self.__criterion.to(self._device)
+
     async def train(self) -> float:
         self._model.train()
 
@@ -181,7 +184,7 @@ class MaskTrainer(Trainer):
 
             result = self._model(origin_images)
 
-            loss = dice_loss(result, mask_images)
+            loss = self.__criterion(result, mask_images)
             loss.backward()
 
             total_loss += loss.item()
@@ -211,7 +214,7 @@ class MaskTrainer(Trainer):
 
                 result = self._model(origin_images)
 
-                loss = dice_loss(result, mask_images)
+                loss = self.__criterion(result, mask_images)
                 total_loss += loss.item()
 
         return total_loss / len(self.__val_dataset)
