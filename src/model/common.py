@@ -58,6 +58,47 @@ class Conv(nn.Module):
         return self.activate(self.conv(x))
 
 
+class ConvTranspose(nn.Module):
+    # Standard convolution
+    def __init__(
+            self,
+            in_channels: int,
+            out_channels: int,
+            kernel_size: size_2_t,
+            stride: size_2_t = 1,
+            padding: Optional[size_2_t] = None,
+            dilation: size_2_t = 1,
+            groups: int = 1,
+            activate: bool or nn.Module = True,
+            dropout_prob: float = 0.0
+    ):
+        super().__init__()
+
+        self.conv = nn.ConvTranspose2d(
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            padding,
+            dilation=dilation,
+            groups=groups,
+            bias=False
+        )
+
+        self.batch_norm = nn.BatchNorm2d(out_channels)
+        self.activate = nn.ReLU() if activate is True else (
+            activate if isinstance(activate, nn.Module) else nn.Identity()
+        )
+        self.dropout = nn.Dropout2d(p=dropout_prob)
+
+    def forward(self, x):
+        return self.dropout(self.activate(self.batch_norm(self.conv(x))))
+
+    def forward_fuse(self, x):
+        return self.activate(self.conv(x))
+
+
+
 class Bottleneck(nn.Module):
     def __init__(
             self,

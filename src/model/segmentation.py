@@ -2,7 +2,7 @@ import torch
 from torch import nn
 
 from src.model.cbam import CBAM
-from src.model.common import Conv, Shortcut, Bottleneck, C3
+from src.model.common import Conv, Shortcut, Bottleneck, C3, ConvTranspose
 
 
 class ResBlock(nn.Module):
@@ -119,9 +119,12 @@ class Decoder(nn.Module):
                 expansion=expansion,
                 dropout_prob=dropout_prob
             )
-            upsample = nn.Upsample(
-                scale_factor=2,
-                mode='nearest'
+            upsample = ConvTranspose(
+                in_channels=out_channels,
+                out_channels=out_channels,
+                kernel_size=2,
+                stride=2,
+                padding=0
             )
 
             c3s.append(nn.Sequential(
