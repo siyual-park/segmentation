@@ -60,6 +60,8 @@ def detect(
                 image_path = image_paths[i]
                 image_size = image_sizes[i]
 
+                mask = mask > 0.5
+
                 mask_image = to_image(mask)
                 mask_image = mask_image.resize(image_size)
                 mask_image.save(image_path.joinpath(f'mask.{format}'))
