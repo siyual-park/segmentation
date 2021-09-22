@@ -89,7 +89,7 @@ class Encoder(nn.Module):
     def forward(self, x):
         x_out = x
         x_outs = []
-        for i, block in enumerate(self.blocks):
+        for i, block in enumerate(self.c3s):
             x_out = block(x_out)
             x_outs.append(x_out)
 
@@ -135,7 +135,7 @@ class Decoder(nn.Module):
 
     def forward(self, x):
         x_out = x[0]
-        for i, block in enumerate(self.blocks):
+        for i, block in enumerate(self.c3s):
             x_out = block(x_out)
             if i != len(self.blocks):
                 x_out += x[i + 1]
