@@ -60,6 +60,8 @@ def detect(
                 image_path = image_paths[i]
                 image_size = image_sizes[i]
 
+                mask = mask > 0.5
+
                 mask_image = to_image(mask)
                 mask_image = mask_image.resize(image_size)
                 mask_image.save(image_path.joinpath(f'mask.{format}'))
@@ -89,7 +91,7 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', type=str, default='detect')
 
     parser.add_argument('--image_size', type=int, default=128)
-    parser.add_argument('--batch_size', type=int, default=32)
+    parser.add_argument('--batch_size', type=int, default=1)
     parser.add_argument('--channels', type=int, default=128)
     parser.add_argument('--deep', type=int, default=4)
 
