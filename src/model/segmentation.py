@@ -44,7 +44,7 @@ class Encoder(nn.Module):
     def forward(self, x):
         x_out = x
         x_outs = []
-        for i, block in enumerate(self.c3sx):
+        for i, block in enumerate(self.c3s):
             x_out = block(x_out)
             x_outs.append(x_out)
 
