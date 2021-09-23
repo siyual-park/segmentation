@@ -60,8 +60,7 @@ def detect(
                 image_path = image_paths[i]
                 image_size = image_sizes[i]
 
-                mask[mask <= 0.5] = 0.0
-                mask[mask > 0.5] = 1.0
+                mask = (mask > 0.5).type(torch.float)
 
                 mask_image = to_image(mask)
                 mask_image = mask_image.resize(image_size)
