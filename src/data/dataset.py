@@ -137,8 +137,11 @@ class SegmentationDetectDataset(data.Dataset):
         images_path = self.data_path.joinpath(str(id))
 
         origin_image_path = images_path.joinpath(f'origin.{self.__format}')
+        mask_image_path = images_path.joinpath(f'mask.{self.__format}')
 
         if not origin_image_path.exists():
+            return None, images_path
+        if mask_image_path.exists():
             return None, images_path
 
         origin_image = Image.open(origin_image_path).convert('RGB')
