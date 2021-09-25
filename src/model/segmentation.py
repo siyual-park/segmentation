@@ -14,7 +14,7 @@ class Encoder(nn.Module):
     ):
         super().__init__()
 
-        c3s = []
+        blocks = []
         current_channels = channels
         for i in range(deep):
             in_channels = current_channels
@@ -34,14 +34,14 @@ class Encoder(nn.Module):
                 dropout_prob=dropout_prob
             )
 
-            c3s.append(nn.Sequential(
+            blocks.append(nn.Sequential(
                 conv,
                 c3,
             ))
 
             current_channels = out_channels
 
-        self.blocks = nn.ModuleList(c3s)
+        self.blocks = nn.ModuleList(blocks)
 
     def forward(self, x):
         x_out = x
@@ -64,7 +64,7 @@ class Decoder(nn.Module):
     ):
         super().__init__()
 
-        c3s = []
+        blocks = []
         current_channels = channels * (2 ** deep)
         for i in range(deep):
             in_channels = current_channels
@@ -76,7 +76,7 @@ class Decoder(nn.Module):
                 expansion=expansion,
                 dropout_prob=dropout_prob
             )
-            upsample = ConvTranspose(
+            conv_transpose = ConvTranspose(
                 in_channels=out_channels,
                 out_channels=out_channels,
                 kernel_size=2,
@@ -84,14 +84,14 @@ class Decoder(nn.Module):
                 padding=0
             )
 
-            c3s.append(nn.Sequential(
+            blocks.append(nn.Sequential(
                 c3,
-                upsample
+                conv_transpose
             ))
 
             current_channels = out_channels
 
-        self.blocks = nn.ModuleList(c3s)
+        self.blocks = nn.ModuleList(blocks)
 
     def forward(self, x):
         x_out = x[0]
