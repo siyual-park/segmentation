@@ -98,7 +98,6 @@ class ConvTranspose(nn.Module):
         return self.activate(self.conv(x))
 
 
-
 class Bottleneck(nn.Module):
     def __init__(
             self,
@@ -187,6 +186,7 @@ class C3(nn.Module):
         x_out = self.conv3(x_out)
 
         return x_out
+
 
 class Shortcut(nn.Module):
     def __init__(
