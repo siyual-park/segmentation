@@ -120,11 +120,19 @@ class Mask(nn.Module):
             stride=1,
             dropout_prob=dropout_prob
         )
-        self.down_scaling = Conv(
-            in_channels=channels,
-            out_channels=1,
-            kernel_size=2,
-            stride=1
+        self.down_scaling = nn.Sequential(
+            C3(
+                in_channels=channels,
+                out_channels=channels,
+                expansion=expansion,
+                dropout_prob=dropout_prob
+            ),
+            Conv(
+                in_channels=channels,
+                out_channels=1,
+                kernel_size=1,
+                stride=1
+            ),
         )
 
         self.encoder = Encoder(
