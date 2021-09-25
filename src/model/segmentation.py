@@ -71,7 +71,7 @@ class Decoder(nn.Module):
             out_channels = current_channels // 2
 
             c3 = C3(
-                in_channels=out_channels,
+                in_channels=in_channels,
                 out_channels=out_channels,
                 expansion=expansion,
                 dropout_prob=dropout_prob
