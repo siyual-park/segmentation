@@ -1,8 +1,7 @@
 import torch
 from torch import nn
 
-from src.model.cbam import CBAM
-from src.model.common import Conv, Shortcut, C3, ConvTranspose
+from src.model.common import Conv, C3, ConvTranspose
 
 
 class Encoder(nn.Module):
