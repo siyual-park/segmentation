@@ -23,9 +23,9 @@ class Encoder(nn.Module):
             conv = Conv(
                 in_channels=in_channels,
                 out_channels=out_channels,
-                dropout_prob=dropout_prob,
                 kernel_size=3,
-                stride=2
+                stride=2,
+                dropout_prob=dropout_prob,
             )
             c3 = C3(
                 in_channels=out_channels,
