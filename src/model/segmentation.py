@@ -111,13 +111,6 @@ class Mask(nn.Module):
     ):
         super().__init__()
 
-        self.attention = Shortcut(
-            module=CBAM(
-                gate_channels=3,
-                dropout_prob=dropout_prob
-            ),
-            activate=True
-        )
         self.up_scaling = Conv(
             in_channels=3,
             out_channels=channels,
@@ -146,8 +139,7 @@ class Mask(nn.Module):
         )
 
     def forward(self, x):
-        x_out = self.attention(x)
-        x_out = self.up_scaling(x_out)
+        x_out = self.up_scaling(x)
 
         x_out = self.encoder(x_out)
         x_out = self.decoder(x_out)
