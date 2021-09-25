@@ -92,6 +92,12 @@ class Decoder(nn.Module):
             current_channels = out_channels
 
         self.blocks = nn.ModuleList(blocks)
+        self.adjust = C3(
+            in_channels=channels,
+            out_channels=channels,
+            expansion=expansion,
+            dropout_prob=dropout_prob
+        )
 
     def forward(self, x):
         x_out = x[0]
@@ -100,7 +106,7 @@ class Decoder(nn.Module):
             if i < len(self.blocks) - 1:
                 x_out += x[i + 1]
 
-        return x_out
+        return self.adjust(x_out)
 
 
 class Mask(nn.Module):
@@ -120,19 +126,11 @@ class Mask(nn.Module):
             stride=1,
             dropout_prob=dropout_prob
         )
-        self.down_scaling = nn.Sequential(
-            C3(
-                in_channels=channels,
-                out_channels=channels,
-                expansion=expansion,
-                dropout_prob=dropout_prob
-            ),
-            Conv(
-                in_channels=channels,
-                out_channels=1,
-                kernel_size=1,
-                stride=1
-            ),
+        self.down_scaling = Conv(
+            in_channels=channels,
+            out_channels=1,
+            kernel_size=1,
+            stride=1
         )
 
         self.encoder = Encoder(
