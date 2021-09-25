@@ -20,8 +20,15 @@ class Encoder(nn.Module):
             in_channels = current_channels
             out_channels = current_channels * 2
 
-            c3 = C3(
+            conv = Conv(
                 in_channels=in_channels,
+                out_channels=out_channels,
+                dropout_prob=dropout_prob,
+                kernel_size=3,
+                stride=2
+            )
+            c3 = C3(
+                in_channels=out_channels,
                 out_channels=out_channels,
                 expansion=expansion,
                 dropout_prob=dropout_prob
@@ -32,6 +39,7 @@ class Encoder(nn.Module):
             )
 
             c3s.append(nn.Sequential(
+                conv,
                 c3,
                 pool
             ))
