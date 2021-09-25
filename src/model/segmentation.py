@@ -123,7 +123,7 @@ class Mask(nn.Module):
         self.down_scaling = Conv(
             in_channels=channels,
             out_channels=1,
-            kernel_size=1,
+            kernel_size=2,
             stride=1
         )
 
