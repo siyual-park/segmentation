@@ -33,25 +33,20 @@ class Encoder(nn.Module):
                 expansion=expansion,
                 dropout_prob=dropout_prob
             )
-            pool = nn.MaxPool2d(
-                kernel_size=2,
-                stride=2,
-            )
 
             c3s.append(nn.Sequential(
                 conv,
                 c3,
-                pool
             ))
 
             current_channels = out_channels
 
-        self.c3s = nn.ModuleList(c3s)
+        self.blocks = nn.ModuleList(c3s)
 
     def forward(self, x):
         x_out = x
         x_outs = []
-        for i, block in enumerate(self.c3s):
+        for i, block in enumerate(self.blocks):
             x_out = block(x_out)
             x_outs.append(x_out)
 
@@ -75,13 +70,6 @@ class Decoder(nn.Module):
             in_channels = current_channels
             out_channels = current_channels // 2
 
-            conv = Conv(
-                in_channels=in_channels,
-                out_channels=out_channels,
-                kernel_size=3,
-                stride=2,
-                dropout_prob=dropout_prob,
-            )
             c3 = C3(
                 in_channels=out_channels,
                 out_channels=out_channels,
@@ -97,20 +85,19 @@ class Decoder(nn.Module):
             )
 
             c3s.append(nn.Sequential(
-                conv,
                 c3,
                 upsample
             ))
 
             current_channels = out_channels
 
-        self.c3s = nn.ModuleList(c3s)
+        self.blocks = nn.ModuleList(c3s)
 
     def forward(self, x):
         x_out = x[0]
-        for i, block in enumerate(self.c3s):
+        for i, block in enumerate(self.blocks):
             x_out = block(x_out)
-            if i < len(self.c3s) - 1:
+            if i < len(self.blocks) - 1:
                 x_out += x[i + 1]
 
         return x_out
