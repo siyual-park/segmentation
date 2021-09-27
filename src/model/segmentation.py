@@ -27,7 +27,13 @@ class Encoder(nn.Module):
                 stride=2,
                 dropout_prob=dropout_prob,
             )
-            c3 = C3(
+            c31 = C3(
+                in_channels=out_channels,
+                out_channels=out_channels,
+                expansion=expansion,
+                dropout_prob=dropout_prob
+            )
+            c32 = C3(
                 in_channels=out_channels,
                 out_channels=out_channels,
                 expansion=expansion,
@@ -36,7 +42,8 @@ class Encoder(nn.Module):
 
             blocks.append(nn.Sequential(
                 conv,
-                c3,
+                c31,
+                c32
             ))
 
             current_channels = out_channels
