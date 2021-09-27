@@ -179,6 +179,7 @@ class MaskTrainer(Trainer):
         for i, (origin_images, mask_images, image_sizes) in enumerate(data):
             origin_images = origin_images.to(self._device)
             mask_images = mask_images.to(self._device)
+            image_sizes = image_sizes.to(self._device)
 
             self._optimizer.zero_grad()
 
