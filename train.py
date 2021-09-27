@@ -86,7 +86,7 @@ if __name__ == '__main__':
     parser.add_argument('--image_size', type=int, default=128)
     parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--channels', type=int, default=64)
-    parser.add_argument('--deep', type=int, default=4)
+    parser.add_argument('--deep', type=int, default=5)
     parser.add_argument('--dropout_prob', type=float, default=0.4)
 
     args = parser.parse_args()
