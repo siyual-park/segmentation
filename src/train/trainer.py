@@ -184,7 +184,11 @@ class MaskTrainer(Trainer):
 
             result = self._model(origin_images)
 
-            loss = self.__criterion(result, mask_images)
+            loss_1 = self.__criterion(result, mask_images)
+            loss_2 = dice_loss(result, mask_images)
+
+            loss = loss_1 + loss_2
+
             loss.backward()
 
             total_loss += loss.item()
@@ -214,7 +218,11 @@ class MaskTrainer(Trainer):
 
                 result = self._model(origin_images)
 
-                loss = self.__criterion(result, mask_images)
+                loss_1 = self.__criterion(result, mask_images)
+                loss_2 = dice_loss(result, mask_images)
+
+                loss = loss_1 + loss_2
+
                 total_loss += loss.item()
 
         return total_loss / len(self.__val_dataset)
