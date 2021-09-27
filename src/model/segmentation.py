@@ -1,8 +1,7 @@
 import torch
 from torch import nn
 
-from src.model.cbam import CBAM
-from src.model.common import Conv, Shortcut, C3, ConvTranspose
+from src.model.common import Conv, C3, ConvTranspose
 
 
 class Encoder(nn.Module):
@@ -15,36 +14,39 @@ class Encoder(nn.Module):
     ):
         super().__init__()
 
-        c3s = []
+        blocks = []
         current_channels = channels
         for i in range(deep):
             in_channels = current_channels
             out_channels = current_channels * 2
 
-            c3 = C3(
+            conv = Conv(
                 in_channels=in_channels,
+                out_channels=out_channels,
+                kernel_size=3,
+                stride=2,
+                dropout_prob=dropout_prob,
+            )
+            c3 = C3(
+                in_channels=out_channels,
                 out_channels=out_channels,
                 expansion=expansion,
                 dropout_prob=dropout_prob
             )
-            pool = nn.MaxPool2d(
-                kernel_size=2,
-                stride=2,
-            )
 
-            c3s.append(nn.Sequential(
+            blocks.append(nn.Sequential(
+                conv,
                 c3,
-                pool
             ))
 
             current_channels = out_channels
 
-        self.c3s = nn.ModuleList(c3s)
+        self.blocks = nn.ModuleList(blocks)
 
     def forward(self, x):
         x_out = x
         x_outs = []
-        for i, block in enumerate(self.c3s):
+        for i, block in enumerate(self.blocks):
             x_out = block(x_out)
             x_outs.append(x_out)
 
@@ -62,7 +64,7 @@ class Decoder(nn.Module):
     ):
         super().__init__()
 
-        c3s = []
+        blocks = []
         current_channels = channels * (2 ** deep)
         for i in range(deep):
             in_channels = current_channels
@@ -74,7 +76,7 @@ class Decoder(nn.Module):
                 expansion=expansion,
                 dropout_prob=dropout_prob
             )
-            upsample = ConvTranspose(
+            conv_transpose = ConvTranspose(
                 in_channels=out_channels,
                 out_channels=out_channels,
                 kernel_size=2,
@@ -82,23 +84,29 @@ class Decoder(nn.Module):
                 padding=0
             )
 
-            c3s.append(nn.Sequential(
+            blocks.append(nn.Sequential(
                 c3,
-                upsample
+                conv_transpose
             ))
 
             current_channels = out_channels
 
-        self.c3s = nn.ModuleList(c3s)
+        self.blocks = nn.ModuleList(blocks)
+        self.adjust = C3(
+            in_channels=channels,
+            out_channels=channels,
+            expansion=expansion,
+            dropout_prob=dropout_prob
+        )
 
     def forward(self, x):
         x_out = x[0]
-        for i, block in enumerate(self.c3s):
+        for i, block in enumerate(self.blocks):
             x_out = block(x_out)
-            if i < len(self.c3s) - 1:
+            if i < len(self.blocks) - 1:
                 x_out += x[i + 1]
 
-        return x_out
+        return self.adjust(x_out)
 
 
 class Mask(nn.Module):
@@ -111,13 +119,6 @@ class Mask(nn.Module):
     ):
         super().__init__()
 
-        self.attention = Shortcut(
-            module=CBAM(
-                gate_channels=3,
-                dropout_prob=dropout_prob
-            ),
-            activate=True
-        )
         self.up_scaling = Conv(
             in_channels=3,
             out_channels=channels,
@@ -146,8 +147,7 @@ class Mask(nn.Module):
         )
 
     def forward(self, x):
-        x_out = self.attention(x)
-        x_out = self.up_scaling(x_out)
+        x_out = self.up_scaling(x)
 
         x_out = self.encoder(x_out)
         x_out = self.decoder(x_out)
