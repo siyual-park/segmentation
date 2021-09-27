@@ -217,7 +217,7 @@ class MaskTrainer(Trainer):
         total_loss = 0.0
 
         with torch.no_grad():
-            for origin_images, mask_images in tqdm(self.__val_dataset):
+            for origin_images, mask_images, _ in tqdm(self.__val_dataset):
                 origin_images = origin_images.to(self._device)
                 mask_images = mask_images.to(self._device)
 
