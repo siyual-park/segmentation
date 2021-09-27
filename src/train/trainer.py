@@ -176,7 +176,7 @@ class MaskTrainer(Trainer):
         total_loss = 0.0
 
         data = tqdm(self.__train_dataset)
-        for i, (origin_images, mask_images) in enumerate(data):
+        for i, (origin_images, mask_images, image_sizes) in enumerate(data):
             origin_images = origin_images.to(self._device)
             mask_images = mask_images.to(self._device)
 
@@ -187,7 +187,9 @@ class MaskTrainer(Trainer):
             loss_1 = self.__criterion(result, mask_images)
             loss_2 = dice_loss(result, mask_images)
 
+            weight = (image_sizes[:, 0] * image_sizes[:, 1]) / (self.__train_dataset.image_size[0] * self.__train_dataset.image_size[1])
             loss = loss_1 + loss_2
+            loss = loss * weight
 
             loss.backward()
 
