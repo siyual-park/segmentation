@@ -189,7 +189,7 @@ class MaskTrainer(Trainer):
             loss_2 = dice_loss(result, mask_images)
 
             image_size = self.__train_dataset.image_size
-            weight = (image_sizes[:, 0] * image_sizes[:, 1]) / (image_size[0] * image_size[1])
+            weight = (image_sizes[:, 0] * image_sizes[:, 1]).mean() / (image_size[0] * image_size[1])
 
             loss = loss_1 + loss_2
             loss = loss * weight
