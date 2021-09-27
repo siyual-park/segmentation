@@ -55,7 +55,7 @@ class SegmentationDataLoader(data.Dataset):
             origin_images.append(origin_image)
             mask_images.append(mask_image)
 
-        return torch.stack(origin_images), torch.stack(mask_images), torch.tensor(image_sizes)
+        return torch.stack(origin_images), torch.stack(mask_images), torch.tensor(image_sizes).type(torch.FloatTensor)
 
 
 class SegmentationDetectDataLoader(data.Dataset):
