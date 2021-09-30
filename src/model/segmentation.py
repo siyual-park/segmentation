@@ -1,7 +1,8 @@
 import torch
 from torch import nn
 
-from src.model.common import Conv, C3, ConvTranspose
+from src.model.cbam import CBAM
+from src.model.common import Conv, C3, ConvTranspose, Shortcut, Bottleneck
 
 
 class Encoder(nn.Module):
@@ -119,6 +120,18 @@ class Mask(nn.Module):
     ):
         super().__init__()
 
+        self.attention = Shortcut(
+            module=Bottleneck(
+                in_channels=3,
+                out_channels=3,
+                down_channels=1,
+                module=CBAM(
+                    gate_channels=1,
+                    dropout_prob=dropout_prob
+                ),
+            ),
+            activate=True
+        )
         self.up_scaling = Conv(
             in_channels=3,
             out_channels=channels,
