@@ -19,6 +19,6 @@ class CombinedLoss(nn.Module):
         dice_loss = self.dice_loss(input, target)
 
         bce_loss = bce_loss * self.weights[0]
-        dice_loss = dice_loss * self.weights[0]
+        dice_loss = dice_loss * self.weights[1]
 
         return bce_loss + dice_loss
