@@ -10,6 +10,7 @@ from tqdm import tqdm
 
 from src.data.dataloader import SegmentationDataLoader
 from src.loss import dice_loss
+from src.loss.combined_loss import CombinedLoss
 from src.model.segmentation import Mask
 from src.optimiser.lookahead import Lookahead
 from src.optimiser.radam import RAdam
@@ -165,7 +166,7 @@ class MaskTrainer(Trainer):
         self.__train_dataset = train_dataset
         self.__val_dataset = val_dataset
 
-        self.__criterion = nn.BCELoss()
+        self.__criterion = CombinedLoss()
         self.__criterion.to(self._device)
 
     async def train(self) -> float:
@@ -185,13 +186,11 @@ class MaskTrainer(Trainer):
 
             result = self._model(origin_images)
 
-            loss_1 = self.__criterion(result, mask_images)
-            loss_2 = dice_loss(result, mask_images)
+            loss = self.__criterion(result, mask_images)
 
             image_size = self.__train_dataset.image_size
             weight = (image_sizes[:, 0] * image_sizes[:, 1]).mean() / (image_size[0] * image_size[1])
 
-            loss = loss_1 + loss_2
             loss = loss * weight
 
             loss.backward()
@@ -217,16 +216,18 @@ class MaskTrainer(Trainer):
         total_loss = 0.0
 
         with torch.no_grad():
-            for origin_images, mask_images, _ in tqdm(self.__val_dataset):
+            for origin_images, mask_images, image_sizes in tqdm(self.__val_dataset):
                 origin_images = origin_images.to(self._device)
                 mask_images = mask_images.to(self._device)
 
                 result = self._model(origin_images)
 
-                loss_1 = self.__criterion(result, mask_images)
-                loss_2 = dice_loss(result, mask_images)
+                loss = self.__criterion(result, mask_images)
 
-                loss = loss_1 + loss_2
+                image_size = self.__val_dataset.image_size
+                weight = (image_sizes[:, 0] * image_sizes[:, 1]).mean() / (image_size[0] * image_size[1])
+
+                loss = loss * weight
 
                 total_loss += loss.item()
 
