@@ -160,7 +160,8 @@ class Mask(nn.Module):
         )
 
     def forward(self, x):
-        x_out = self.up_scaling(x)
+        x_out = self.attention(x)
+        x_out = self.up_scaling(x_out)
 
         x_out = self.encoder(x_out)
         x_out = self.decoder(x_out)
